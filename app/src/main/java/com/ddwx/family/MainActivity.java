@@ -77,8 +77,26 @@ public class MainActivity extends AppCompatActivity {
             toRequestPermissions(this, CODE);
         }
 
-        TextView textView = findViewById(R.id.text);
-        textView.setOnClickListener(new View.OnClickListener() {
+        TextView mWeChatLogin = findViewById(R.id.WeChatLogin);
+        TextView mWeChatShare = findViewById(R.id.WeChatShare);
+        TextView mFriendsShare = findViewById(R.id.FriendsShare);
+
+
+        mWeChatShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "功能尚未开发", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        mFriendsShare.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "功能尚未开发", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        mWeChatLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //判断文件是否存在，如果存在则从文件中获取accessToken

@@ -28,6 +28,12 @@ android {
             storeFile file('DdwxFamily.jks')
             storePassword 'Ddweixiao2016'
         }
+        release {
+            keyAlias 'ddweixiaofamily'
+            keyPassword 'Ddweixiao2016'
+            storeFile file('DdwxFamily.jks')
+            storePassword 'Ddweixiao2016'
+        }
     }
 }
 
