@@ -17,6 +17,7 @@ import com.zhy.http.okhttp.callback.StringCallback;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +34,7 @@ public class OkHttp {
             }
 
             @Override
-            public void onResponse(String response, int id) {
+            public void onResponse(final String response, int id) {
                 Log.e("onResponse", response);
                 JSONObject jsonObject = null;
                 try {
@@ -43,6 +44,18 @@ public class OkHttp {
                             if (MyApplication.errorBean.errcode == -1) {
                                 InitBean.initUserInfoBean(jsonObject);
                                 Log.e("getWeChatData", "userInfo======>" + MyApplication.userInfoBean.toString());
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            FileUtil.writeFileData(context,"userInfo.txt",response);
+                                            FileUtil.writtenFileData(context,"userInfo2.txt",response);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                }).start();
                             } else {
                                 Log.e("getWeChatData", "userInfo======>errcode:" + MyApplication.errorBean.errcode + "errmsg:" + MyApplication.errorBean.errmsg);
                             }
@@ -51,6 +64,18 @@ public class OkHttp {
                             if (MyApplication.errorBean.errcode == -1) {
                                 InitBean.initAccessTokenBean(jsonObject);
                                 Log.e("getWeChatData", "accessToken======>" + MyApplication.accessTokenBean.toString());
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            FileUtil.writeFileData(context,"accessToken.txt",response);
+                                            FileUtil.writtenFileData(context,"accessToken2.txt",response);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                }).start();
                             } else {
                                 Log.e("getWeChatData", "accessToken======>errcode:" + MyApplication.errorBean.errcode + "errmsg:" + MyApplication.errorBean.errmsg);
                             }
