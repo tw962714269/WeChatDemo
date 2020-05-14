@@ -41,6 +41,8 @@ import java.util.Map;
  * 在app文件夹下有说明.txt文件，内部是这次的整体流程
  * 基本功能已经实现
  * 所有的信息以Log日志的形式输出
+ * 2020年5月14日17:11:06
+ * 已更改为以文件的形式打印
  */
 
 public class MainActivity extends AppCompatActivity {
