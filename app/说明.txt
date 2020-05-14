@@ -1,0 +1,26 @@
+
+                                                        <1>
+点击MAinActivity页面HelloWorld-------->请求checkAccessTokenUrl接口(检测accessToken是否可用)
+                                                    |                               |
+                                                    |                               |
+                                                    |接口请求成功并且accessToken可用  |失败或者accessToken已过期
+                                                    |(在OkHttp类中进行判断是否可用)   |
+                                                    |                               |
+                                                    |                               |
+                                   由于accessToken可用，直接获取用户信息       根据refreshToken重新获取accessToken
+                                                   <2>                                      <2>
+                                          请求getUserInfoUrl接口                请求refreshAccessTokenUrl接口
+                                                                                     |                  |
+                                                                                     |                  |
+                                                                                     |请求成功           |失败或者refreshToken失效
+                                                                                     |                  |
+                                                                                     |                  |
+                                                                                     |                  |        <3>                  (授权失败)
+                                                                        accessToken的值已被重新赋值   跳转到微信授权页面请求用户授权----------------->无
+                                                                              直接获取用户信息                      |
+                                                                                    <3>                           |
+                                                                            请求getUserInfoUrl接口                 |
+                                                                                                                  |
+                                                                                                                  |
+                                                                                                                 <4>
+                                                                                                       可再次点击HelloWorld获取用户信息
