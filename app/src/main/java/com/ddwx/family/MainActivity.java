@@ -1,23 +1,15 @@
 package com.ddwx.family;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.ddwx.family.app.MyApplication;
-import com.ddwx.family.bean.AccessTokenBean;
-import com.ddwx.family.bean.ErrorBean;
-import com.ddwx.family.bean.UserInfoBean;
 import com.ddwx.family.url.UrlAddress;
 import com.ddwx.family.utils.OkHttp;
 import com.ddwx.family.utils.UrlType;
-import com.tencent.mm.opensdk.modelmsg.SendAuth;
-import com.tencent.mm.opensdk.openapi.IWXAPI;
-import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
                 Map<String, String> checkParams = new HashMap<>();
                 checkParams.put("access_token", MyApplication.accessTokenBean.access_token);
                 checkParams.put("openid", MyApplication.accessTokenBean.openid);
-                OkHttp.getWeChatData(UrlAddress.checkAccessTokenUrl, checkParams, ErrorBean.class, MainActivity.this, UrlType.CHECK_ACCESS);
+                OkHttp.getWeChatData(UrlAddress.checkAccessTokenUrl, checkParams, MainActivity.this, UrlType.CHECK_ACCESS);
             }
         });
     }

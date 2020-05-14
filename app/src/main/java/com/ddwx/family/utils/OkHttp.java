@@ -6,9 +6,7 @@ import android.widget.Toast;
 
 import com.ddwx.family.MainActivity;
 import com.ddwx.family.app.MyApplication;
-import com.ddwx.family.bean.AccessTokenBean;
 import com.ddwx.family.bean.ErrorBean;
-import com.ddwx.family.bean.UserInfoBean;
 import com.ddwx.family.url.UrlAddress;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
@@ -25,7 +23,7 @@ import java.util.Map;
 import okhttp3.Call;
 
 public class OkHttp {
-    public static void getWeChatData(String url, Map<String, String> params, final Object object, final Context context, final UrlType type) {
+    public static void getWeChatData(String url, Map<String, String> params, final Context context, final UrlType type) {
         OkHttpUtils.post().url(UrlAddress.weChatBaseUrl + url)
                 .params(params)
                 .build().execute(new StringCallback() {
@@ -65,7 +63,7 @@ public class OkHttp {
                                 Map<String, String> getUserInfoParams = new HashMap<>();
                                 getUserInfoParams.put("access_token", MyApplication.accessTokenBean.access_token);
                                 getUserInfoParams.put("openid", MyApplication.accessTokenBean.openid);
-                                OkHttp.getWeChatData(UrlAddress.getUserInfoUrl, getUserInfoParams, UserInfoBean.class, context, UrlType.USERINFO);
+                                OkHttp.getWeChatData(UrlAddress.getUserInfoUrl, getUserInfoParams, context, UrlType.USERINFO);
                             } else {
                                 //AccessToken已过期，根据RefreshToken重新获取
                                 MyApplication.errorBean = new ErrorBean();
@@ -73,7 +71,7 @@ public class OkHttp {
                                 refreshParams.put("appid", MainActivity.WECHAT_APP_ID);
                                 refreshParams.put("grant_type", "refresh_token");
                                 refreshParams.put("refresh_token", MyApplication.accessTokenBean.refresh_token);
-                                OkHttp.getWeChatData(UrlAddress.refreshAccessTokenUrl, refreshParams, AccessTokenBean.class, context, UrlType.REFRESH_TOKEN);
+                                OkHttp.getWeChatData(UrlAddress.refreshAccessTokenUrl, refreshParams, context, UrlType.REFRESH_TOKEN);
                             }
                             break;
                         case REFRESH_TOKEN:
@@ -85,7 +83,7 @@ public class OkHttp {
                                 Map<String, String> getUserInfoParams = new HashMap<>();
                                 getUserInfoParams.put("access_token", MyApplication.accessTokenBean.access_token);
                                 getUserInfoParams.put("openid", MyApplication.accessTokenBean.openid);
-                                OkHttp.getWeChatData(UrlAddress.getUserInfoUrl, getUserInfoParams, UserInfoBean.class, context, UrlType.USERINFO);
+                                OkHttp.getWeChatData(UrlAddress.getUserInfoUrl, getUserInfoParams, context, UrlType.USERINFO);
                             } else {
                                 //RefreshToken失效
                                 //重新拉取微信登录授权

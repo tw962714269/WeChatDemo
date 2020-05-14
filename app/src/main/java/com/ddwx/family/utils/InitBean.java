@@ -6,6 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * 项目中没有GSON解析  所以才有了这个类
+ * 解析接口返回的数据，并赋值为全局的实体变量
+ */
 public class InitBean {
     public static void initAccessTokenBean(JSONObject jsonObject) {
         try {

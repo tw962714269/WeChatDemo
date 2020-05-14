@@ -2,7 +2,10 @@ package com.ddwx.family.bean;
 
 import androidx.annotation.NonNull;
 
-public class AccessTokenBean {
+/**
+ * 存储着AccessToken和RefreshToken
+ */
+public class AccessTokenBean extends ErrorBean{
     //接口调用凭证
     public String access_token = "";
     //access_token 接口调用凭证超时时间，单位（秒）(7200miao)

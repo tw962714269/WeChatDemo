@@ -3,9 +3,11 @@ package com.ddwx.family.bean;
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
-import java.util.List;
 
-public class UserInfoBean {
+/**
+ * 存储用户信息的bean
+ */
+public class UserInfoBean extends ErrorBean {
     //普通用户的标识，对当前开发者帐号唯一
     public String openid;
     //普通用户昵称
@@ -24,6 +26,8 @@ public class UserInfoBean {
     public ArrayList<String> privilege = new ArrayList<>();
     //用户统一标识。针对一个微信开放平台帐号下的应用，同一用户的 unionid 是唯一的。
     public String unionid;
+
+
 
     @NonNull
     @Override

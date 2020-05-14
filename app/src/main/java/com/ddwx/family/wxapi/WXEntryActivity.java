@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.ddwx.family.MainActivity;
 import com.ddwx.family.app.MyApplication;
-import com.ddwx.family.bean.AccessTokenBean;
 import com.ddwx.family.bean.ErrorBean;
 import com.ddwx.family.url.UrlAddress;
 import com.ddwx.family.utils.OkHttp;
@@ -18,16 +17,9 @@ import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
-import com.zhy.http.okhttp.OkHttpUtils;
-import com.zhy.http.okhttp.callback.StringCallback;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import okhttp3.Call;
 
 public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHandler {
 
@@ -62,7 +54,7 @@ public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHan
                         params.put("secret", MainActivity.WECHAT_APP_SECRET);
                         params.put("code", code);
                         params.put("grant_type", "authorization_code");
-                        OkHttp.getWeChatData(UrlAddress.getAccessTokenUrl, params, AccessTokenBean.class,WXEntryActivity.this, UrlType.ACCRSSTOKEN);
+                        OkHttp.getWeChatData(UrlAddress.getAccessTokenUrl, params, WXEntryActivity.this, UrlType.ACCRSSTOKEN);
                         finish();
                     }
                 });
