@@ -13,12 +13,20 @@ import java.io.RandomAccessFile;
 
 public class FileUtil {
 
+    /**
+     * 重写文件内容
+     *
+     * @param context
+     * @param fileName
+     * @param content
+     * @throws IOException
+     */
 
     public static void writeFileData(Context context, String fileName, String content) throws IOException {
         makeFilePath(context, fileName);
         String filePath = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getPath() + "/" + fileName;
         File file = new File(filePath);
-        FileOutputStream outputStream = new FileOutputStream(file,false);
+        FileOutputStream outputStream = new FileOutputStream(file, false);
         outputStream.write(content.getBytes("UTF-8"));
         outputStream.close();
     }
@@ -77,8 +85,11 @@ public class FileUtil {
     }
 
     /**
-     * 【读取文件内容】
-     **/
+     * 读取文件内容
+     *
+     * @param path
+     * @return
+     */
     public static String readFileContent(String path) {
         try {
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {

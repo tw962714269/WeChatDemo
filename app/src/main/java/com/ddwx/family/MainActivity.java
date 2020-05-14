@@ -79,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //判断文件是否存在，如果存在则从文件中获取accessToken
+                //如果不存在则表示未进行微信授权，前往进行授权
                 File file = new File(rootFilePath + accessTokenPath);
                 if (file.exists()) {
                     String s = FileUtil.readFileContent(rootFilePath + accessTokenPath);
@@ -102,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
                     req.state = "wx_login_duzun";
                     wxapi.sendReq(req);
                 }
-                Toast.makeText(MainActivity.this, file.exists() + "", Toast.LENGTH_SHORT).show();
             }
         });
     }
