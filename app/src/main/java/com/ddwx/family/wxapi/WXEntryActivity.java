@@ -12,6 +12,7 @@ import com.ddwx.family.bean.ErrorBean;
 import com.ddwx.family.url.UrlAddress;
 import com.ddwx.family.utils.OkHttp;
 import com.ddwx.family.utils.UrlType;
+import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
@@ -42,6 +43,11 @@ public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHan
         Log.e(TAG, "onReq" + baseResp.errCode);
         switch (baseResp.errCode) {
             case BaseResp.ErrCode.ERR_OK:
+                switch (baseResp.getType()){
+                    case ConstantsAPI.COMMAND_SENDMESSAGE_TO_WX:
+                        finish();
+                        break;
+                }
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
