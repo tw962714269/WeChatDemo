@@ -65,6 +65,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int SHARE_TEXT_TO_WECHAT = 1;
     private static final int SHARE_PICTURE_TO_WECHAT = 2;
     private static final int SHARE_LINK_TO_WECHAT = 3;
+    // SendMessageToWX.Req.WXSceneSession是分享到好友会话
+    // SendMessageToWX.Req.WXSceneTimeline是分享到朋友圈
     private static final int SHARE_TO_WECHAT_SESSION = SendMessageToWX.Req.WXSceneSession;
     private static final int SHARE_TO_WECHAT_FRIENDS = SendMessageToWX.Req.WXSceneTimeline;
 
@@ -208,8 +210,6 @@ public class MainActivity extends AppCompatActivity {
             req.transaction = shareContent.content;
             // 上文的WXMediaMessage对象
             req.message = msg;
-            // SendMessageToWX.Req.WXSceneSession是分享到好友会话
-            // SendMessageToWX.Req.WXSceneTimeline是分享到朋友圈
             req.scene = shareContent.way;
             // 向微信发送请求
             wxapi.sendReq(req);
