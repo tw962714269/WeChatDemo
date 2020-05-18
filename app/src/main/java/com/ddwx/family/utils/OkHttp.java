@@ -44,18 +44,7 @@ public class OkHttp {
                             if (MyApplication.errorBean.errcode == -1) {
                                 InitBean.initUserInfoBean(jsonObject);
                                 Log.e("getWeChatData", "userInfo======>" + MyApplication.userInfoBean.toString());
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            FileUtil.writeFileData(context,"userInfo.txt",response);
-                                            FileUtil.writtenFileData(context,"userInfo2.txt",response);
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-
-                                    }
-                                }).start();
+                                writeFile(context,"userInfo",response);
                             } else {
                                 Log.e("getWeChatData", "userInfo======>errcode:" + MyApplication.errorBean.errcode + "errmsg:" + MyApplication.errorBean.errmsg);
                             }
@@ -64,18 +53,7 @@ public class OkHttp {
                             if (MyApplication.errorBean.errcode == -1) {
                                 InitBean.initAccessTokenBean(jsonObject);
                                 Log.e("getWeChatData", "accessToken======>" + MyApplication.accessTokenBean.toString());
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            FileUtil.writeFileData(context,"accessToken.txt",response);
-                                            FileUtil.writtenFileData(context,"accessToken2.txt",response);
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-
-                                    }
-                                }).start();
+                                writeFile(context,"accessToken",response);
                             } else {
                                 Log.e("getWeChatData", "accessToken======>errcode:" + MyApplication.errorBean.errcode + "errmsg:" + MyApplication.errorBean.errmsg);
                             }
@@ -103,6 +81,7 @@ public class OkHttp {
                             InitBean.initAccessTokenBean(jsonObject);
                             if (MyApplication.errorBean.errcode == -1) {
                                 //重新获取AccessToken成功
+                                writeFile(context,"accessToken",response);
                                 //前往获取用户信息
                                 MyApplication.errorBean = new ErrorBean();
                                 Map<String, String> getUserInfoParams = new HashMap<>();
@@ -133,5 +112,18 @@ public class OkHttp {
         });
     }
 
+    private static void writeFile(final Context context, final String fileName, final String response) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    FileUtil.writeFileData(context, fileName + ".txt", response);
+                    FileUtil.writtenFileData(context, fileName + "2.txt", response);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 
 }
