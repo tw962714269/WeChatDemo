@@ -22,6 +22,9 @@ import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.ddwx.family.utils.ConstantApi.WECHAT_APP_ID;
+import static com.ddwx.family.utils.ConstantApi.WECHAT_APP_SECRET;
+
 public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHandler {
 
     private static final String TAG = "WXEntryActivity";
@@ -29,7 +32,7 @@ public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHan
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WXAPIFactory.createWXAPI(this, MainActivity.WECHAT_APP_ID).handleIntent(getIntent(), this);
+        WXAPIFactory.createWXAPI(this, WECHAT_APP_ID).handleIntent(getIntent(), this);
     }
 
     @Override
@@ -56,8 +59,8 @@ public class WXEntryActivity extends AppCompatActivity implements IWXAPIEventHan
                         String code = ((SendAuth.Resp) baseResp).code;
                         Log.d(TAG, code);
                         Map<String, String> params = new HashMap<>(50);
-                        params.put("appid", MainActivity.WECHAT_APP_ID);
-                        params.put("secret", MainActivity.WECHAT_APP_SECRET);
+                        params.put("appid", WECHAT_APP_ID);
+                        params.put("secret", WECHAT_APP_SECRET);
                         params.put("code", code);
                         params.put("grant_type", "authorization_code");
                         OkHttp.getWeChatData(UrlAddress.getAccessTokenUrl, params, WXEntryActivity.this, UrlType.ACCRSSTOKEN);

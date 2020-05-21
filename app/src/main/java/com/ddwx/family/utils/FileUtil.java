@@ -4,6 +4,11 @@ import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
+import com.ddwx.family.MainActivity;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,20 +16,45 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import static com.ddwx.family.utils.ConstantApi.accessTokenPath;
+import static com.ddwx.family.utils.ConstantApi.rootFilePath;
+
 public class FileUtil {
+
+    /**
+     * 获取App文档存储路径
+     *
+     * @param context
+     */
+    public static void getRootFilePath(Context context) {
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()))
+            ConstantApi.rootFilePath = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getPath();
+        else
+            ConstantApi.rootFilePath = context.getFilesDir().getPath();
+
+    }
+
+    /**
+     * 检测File是否存在
+     *
+     * @return
+     */
+    public static boolean checkFileExists(String filePath) {
+        File file = new File(filePath);
+        return file.exists() ? true : false;
+    }
 
     /**
      * 重写文件内容
      *
-     * @param context
      * @param fileName
      * @param content
      * @throws IOException
      */
 
-    public static void writeFileData(Context context, String fileName, String content) throws IOException {
-        makeFilePath(context, fileName);
-        String filePath = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getPath() + "/" + fileName;
+    public static void writeFileData(String fileName, String content) throws IOException {
+        makeFileByPath(fileName);
+        String filePath = rootFilePath + "/" + fileName;
         File file = new File(filePath);
         FileOutputStream outputStream = new FileOutputStream(file, false);
         outputStream.write(content.getBytes("UTF-8"));
@@ -34,14 +64,13 @@ public class FileUtil {
     /**
      * 续写文件内容
      *
-     * @param context
      * @param fileName
      * @param content
      * @throws IOException
      */
-    public static void writtenFileData(Context context, String fileName, String content) throws IOException {
-        makeFilePath(context, fileName);
-        String filePath = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getPath() + "/" + fileName;
+    public static void writtenFileData(String fileName, String content) throws IOException {
+        makeFileByPath(fileName);
+        String filePath = rootFilePath + "/" + fileName;
         content = System.currentTimeMillis() + "\r\n" + content + "\r\n";
         try {
             File file = new File(filePath);
@@ -59,28 +88,19 @@ public class FileUtil {
         }
     }
 
-    private static File makeFilePath(Context context, String fileName) throws IOException {
+    private static void makeFileByPath(String fileName) throws IOException {
         File file = null;
-        checkFilePath(context);
-        file = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getPath() + "/" + fileName);
+        checkFilePath();
+        file = new File(rootFilePath + "/" + fileName);
         if (!file.exists())
             file.createNewFile();
-        return file;
     }
 
-
     /**
-     * 检测文件夹是否存在,不存在则生成
-     *
-     * @param context
-     * @throws IOException
+     * 检测文档文件夹是否存在,不存在则生成
      */
-    private static void checkFilePath(Context context) throws IOException {
-        File file;
-        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()))
-            file = new File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getPath());
-        else
-            file = new File(context.getFilesDir().getPath());
+    private static void checkFilePath() {
+        File file = new File(rootFilePath);
         if (!file.exists()) file.mkdir();
     }
 
@@ -108,5 +128,14 @@ public class FileUtil {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static void initBeanByFileContent(String path,UrlType type) throws JSONException {
+        String s = readFileContent(path);
+        switch (type){
+            case ACCRSSTOKEN:
+                InitBean.initAccessTokenBean(new JSONObject(s));
+                break;
+        }
     }
 }

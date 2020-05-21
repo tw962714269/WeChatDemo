@@ -4,16 +4,11 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,27 +20,32 @@ import androidx.core.content.ContextCompat;
 import com.ddwx.family.app.MyApplication;
 import com.ddwx.family.bean.ShareContent;
 import com.ddwx.family.url.UrlAddress;
+import com.ddwx.family.utils.CommonUtil;
+import com.ddwx.family.utils.ConstantApi;
 import com.ddwx.family.utils.FileUtil;
-import com.ddwx.family.utils.InitBean;
 import com.ddwx.family.utils.OkHttp;
+import com.ddwx.family.utils.ShareContentToVX;
 import com.ddwx.family.utils.UrlType;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
-import com.tencent.mm.opensdk.modelmsg.WXImageObject;
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
-import com.tencent.mm.opensdk.modelmsg.WXTextObject;
-import com.tencent.mm.opensdk.modelmsg.WXWebpageObject;
-import com.tencent.mm.opensdk.openapi.IWXAPI;
-import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.ddwx.family.utils.ConstantApi.CODE;
+import static com.ddwx.family.utils.ConstantApi.SHARE_LINK_TO_WECHAT;
+import static com.ddwx.family.utils.ConstantApi.SHARE_PICTURE_TO_WECHAT;
+import static com.ddwx.family.utils.ConstantApi.SHARE_TEXT_TO_WECHAT;
+import static com.ddwx.family.utils.ConstantApi.SHARE_TO_WECHAT_FRIENDS;
+import static com.ddwx.family.utils.ConstantApi.SHARE_TO_WECHAT_SESSION;
+import static com.ddwx.family.utils.ConstantApi.accessTokenPath;
+import static com.ddwx.family.utils.ConstantApi.rootFilePath;
+import static com.ddwx.family.utils.ConstantApi.wxapi;
 
 /**
  * 在app文件夹下有说明.txt文件，内部是这次的整体流程
@@ -59,24 +59,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String TAG = "MainActivity";
 
-    private final int CODE = 10086;
-    public static final String WECHAT_APP_ID = "wx7f9b4e815b5fc737";
-    public static final String WECHAT_APP_SECRET = "f1067828b63fb02b1b5a147c249510c7";
-    private static final int SHARE_TEXT_TO_WECHAT = 1;
-    private static final int SHARE_PICTURE_TO_WECHAT = 2;
-    private static final int SHARE_LINK_TO_WECHAT = 3;
-    // SendMessageToWX.Req.WXSceneSession是分享到好友会话
-    // SendMessageToWX.Req.WXSceneTimeline是分享到朋友圈
-    private static final int SHARE_TO_WECHAT_SESSION = SendMessageToWX.Req.WXSceneSession;
-    private static final int SHARE_TO_WECHAT_FRIENDS = SendMessageToWX.Req.WXSceneTimeline;
-
     private List<String> permissionsList = new ArrayList<>();
-    private String rootFilePath;
-    private String accessTokenPath = "accessToken.txt";
-    private String userInfoPath = "userInfo.txt";
     private ShareContent shareContent = new ShareContent();
-    private String url = "https://www.baidu.com/";
-    private IWXAPI wxapi;
 
 
     private String[] permissionsArray = new String[]{
@@ -89,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        rootFilePath = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).getPath() + "/";
+
         toCheckPermissions(this, permissionsArray);
         if (permissionsList.size() > 0) {
             Log.e(TAG, "onCreate: APP需要获取您的XXX权限，以保证您的正常使用");
@@ -97,21 +81,58 @@ public class MainActivity extends AppCompatActivity {
             toRequestPermissions(this, CODE);
         }
 
-        TextView mWeChatLogin = findViewById(R.id.WeChatLogin);
+        //微信登陆，获取用户信息
+        TextView mWeChatLogin = findViewById(R.id.weChatLogin);
+        /**
+         * 微信授权登录
+         */
+        mWeChatLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (CommonUtil.checkVX(MainActivity.this)) {
+                    FileUtil.getRootFilePath(MainActivity.this);
+                    if (FileUtil.checkFileExists(rootFilePath + "/" + accessTokenPath)) {
+                        //判断文件是否存在，如果存在则从文件中获取accessToken
+                        checkAccessToken(UrlType.CHECK_ACCESS_TO_LOGIN);
+                    } else {
+                        //如果不存在则表示未进行微信授权，前往进行授权
+                        SendAuth.Req req = new SendAuth.Req();
+                        req.scope = "snsapi_userinfo";
+                        wxapi.sendReq(req);
+                    }
+                }
+            }
+        });
 
+        TextView mUserInfo = findViewById(R.id.userInfo);
+        /**
+         * 获取用户信息
+         */
+        mUserInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!CommonUtil.checkVX(MainActivity.this)) return;
+                FileUtil.getRootFilePath(MainActivity.this);
+                if (FileUtil.checkFileExists(rootFilePath + "/" + accessTokenPath)) {
+                    //判断文件是否存在，如果存在则从文件中获取accessToken
+                    checkAccessToken(UrlType.CHECK_ACCESS_FOR_GET_USERINFO);
+                } else {
+                    //如果不存在则表示未进行微信授权，前往进行授权
+                    Toast.makeText(MainActivity.this, "请先授权微信登陆", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        //微信会话分享
         TextView mShareTextToSession = findViewById(R.id.session_text);
         TextView mSharePicToSession = findViewById(R.id.session_picture);
         TextView mShareLinkToSession = findViewById(R.id.session_link);
-        TextView mShareTextToFriends = findViewById(R.id.friends_text);
-        TextView mSharePicToFriends = findViewById(R.id.friends_picture);
-        TextView mShareLinkToFriends = findViewById(R.id.friends_link);
-
 
         mShareTextToSession.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!checkVX()) return;
-                initShareContent(SHARE_TEXT_TO_WECHAT,"分享文本内容",SHARE_TO_WECHAT_SESSION);
+                if (!CommonUtil.checkVX(MainActivity.this)) return;
+                initShareContent(SHARE_TEXT_TO_WECHAT, "分享文本内容", SHARE_TO_WECHAT_SESSION);
                 shareToWeChat();
             }
         });
@@ -119,25 +140,31 @@ public class MainActivity extends AppCompatActivity {
         mSharePicToSession.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!checkVX()) return;
-                initShareContent(SHARE_PICTURE_TO_WECHAT,"分享图片",SHARE_TO_WECHAT_SESSION);
-                shareToWeChat();
-            }
-        });
-        mShareLinkToSession.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!checkVX()) return;
-                initShareContent(SHARE_LINK_TO_WECHAT,"链接分享",SHARE_TO_WECHAT_SESSION);
+                if (!CommonUtil.checkVX(MainActivity.this)) return;
+                initShareContent(SHARE_PICTURE_TO_WECHAT, "分享图片", SHARE_TO_WECHAT_SESSION);
                 shareToWeChat();
             }
         });
 
+        mShareLinkToSession.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!CommonUtil.checkVX(MainActivity.this)) return;
+                initShareContent(SHARE_LINK_TO_WECHAT, "链接分享", SHARE_TO_WECHAT_SESSION);
+                shareToWeChat();
+            }
+        });
+
+        //微信朋友圈分享
+        TextView mShareTextToFriends = findViewById(R.id.friends_text);
+        TextView mSharePicToFriends = findViewById(R.id.friends_picture);
+        TextView mShareLinkToFriends = findViewById(R.id.friends_link);
+
         mShareTextToFriends.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!checkVX()) return;
-                initShareContent(SHARE_TEXT_TO_WECHAT,"分享文本内容",SHARE_TO_WECHAT_FRIENDS);
+                if (!CommonUtil.checkVX(MainActivity.this)) return;
+                initShareContent(SHARE_TEXT_TO_WECHAT, "分享文本内容", SHARE_TO_WECHAT_FRIENDS);
                 shareToWeChat();
             }
         });
@@ -145,65 +172,47 @@ public class MainActivity extends AppCompatActivity {
         mSharePicToFriends.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!checkVX()) return;
-                initShareContent(SHARE_PICTURE_TO_WECHAT,"分享图片",SHARE_TO_WECHAT_FRIENDS);
-                shareToWeChat();
-            }
-        });
-        mShareLinkToFriends.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!checkVX()) return;
-                initShareContent(SHARE_LINK_TO_WECHAT,"链接分享",SHARE_TO_WECHAT_FRIENDS);
+                if (!CommonUtil.checkVX(MainActivity.this)) return;
+                initShareContent(SHARE_PICTURE_TO_WECHAT, "分享图片", SHARE_TO_WECHAT_FRIENDS);
                 shareToWeChat();
             }
         });
 
-        /**
-         * 微信登录
-         */
-        mWeChatLogin.setOnClickListener(new View.OnClickListener() {
+        mShareLinkToFriends.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //判断文件是否存在，如果存在则从文件中获取accessToken
-                //如果不存在则表示未进行微信授权，前往进行授权
-                File file = new File(rootFilePath + accessTokenPath);
-                if (file.exists()) {
-                    String s = FileUtil.readFileContent(rootFilePath + accessTokenPath);
-                    try {
-                        InitBean.initAccessTokenBean(new JSONObject(s));
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    Map<String, String> checkParams = new HashMap<>();
-                    checkParams.put("access_token", MyApplication.accessTokenBean.access_token);
-                    checkParams.put("openid", MyApplication.accessTokenBean.openid);
-                    OkHttp.getWeChatData(UrlAddress.checkAccessTokenUrl, checkParams, MainActivity.this, UrlType.CHECK_ACCESS);
-                } else {
-                    if (checkVX()) {
-                        SendAuth.Req req = new SendAuth.Req();
-                        req.scope = "snsapi_userinfo";
-                        req.state = "wx_login_duzun";
-                        wxapi.sendReq(req);
-                    }
-                }
+                if (!CommonUtil.checkVX(MainActivity.this)) return;
+                initShareContent(SHARE_LINK_TO_WECHAT, "链接分享", SHARE_TO_WECHAT_FRIENDS);
+                shareToWeChat();
             }
         });
     }
 
-    private void initShareContent(int type,String content,int way) {
+    private void checkAccessToken(UrlType type) {
+        try {
+            FileUtil.initBeanByFileContent(rootFilePath + "/" + accessTokenPath, UrlType.ACCRSSTOKEN);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Map<String, String> checkParams = new HashMap<>();
+        checkParams.put("access_token", MyApplication.accessTokenBean.access_token);
+        checkParams.put("openid", MyApplication.accessTokenBean.openid);
+        OkHttp.getWeChatData(UrlAddress.checkAccessTokenUrl, checkParams, this, type);
+    }
+
+    private void initShareContent(int type, String content, int way) {
         shareContent.initParams();
         shareContent.type = type;
         shareContent.iconId = R.mipmap.resize;
         shareContent.content = content;
         shareContent.title = "微信分享";
-        shareContent.webUrl = url;
+        shareContent.webUrl = ConstantApi.linkUrl;
         shareContent.way = way;
     }
 
     private void shareToWeChat() {
         WXMediaMessage msg;
-        if ((msg = setVXMsg(shareContent)) != null) {
+        if ((msg = ShareContentToVX.setVXMsg(this,shareContent)) != null) {
             // 构造一个Req
             SendMessageToWX.Req req = new SendMessageToWX.Req();
             // transaction用于唯一标识一个请求（可自定义）
@@ -215,72 +224,6 @@ public class MainActivity extends AppCompatActivity {
             wxapi.sendReq(req);
         }
     }
-
-    private WXMediaMessage shareTextToWX(String msgContent) {
-        WXTextObject textObject = new WXTextObject();
-        textObject.text = msgContent;
-        WXMediaMessage wxMediaMessage = new WXMediaMessage();
-        wxMediaMessage.mediaObject = textObject;
-        wxMediaMessage.description = msgContent;
-        return wxMediaMessage;
-    }
-
-    private WXMediaMessage sharePictureToWX(int iconId) {
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), iconId);
-        WXImageObject imageObject = new WXImageObject(bitmap);
-        WXMediaMessage wxMediaMessage = new WXMediaMessage();
-        wxMediaMessage.mediaObject = imageObject;
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, true);
-        bitmap.recycle();
-        wxMediaMessage.setThumbImage(scaledBitmap);
-        return wxMediaMessage;
-    }
-
-    private WXMediaMessage shareLinkToWX(ShareContent shareContent) {
-        // 初始化一个WXWebpageObject对象
-        WXWebpageObject webpageObject = new WXWebpageObject();
-        // 填写网页的url
-        webpageObject.webpageUrl = shareContent.webUrl;
-        // 用WXWebpageObject对象初始化一个WXMediaMessage对象
-        WXMediaMessage wxMediaMessage = new WXMediaMessage(webpageObject);
-//        // 填写网页标题、描述、位图
-        wxMediaMessage.title = shareContent.title;
-        wxMediaMessage.description = shareContent.content;
-        // 如果没有位图，可以传null，会显示默认的图片
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), shareContent.iconId);
-        if (bitmap == null) {
-            Toast.makeText(this, "图片不能为空", Toast.LENGTH_SHORT).show();
-            return null;
-        } else
-            wxMediaMessage.setThumbImage(bitmap);
-        return wxMediaMessage;
-    }
-
-    private WXMediaMessage setVXMsg(ShareContent shareContent) {
-        switch (shareContent.type) {
-            case SHARE_TEXT_TO_WECHAT:
-                return shareTextToWX(shareContent.content);
-            case SHARE_PICTURE_TO_WECHAT:
-                return sharePictureToWX(shareContent.iconId);
-            case SHARE_LINK_TO_WECHAT:
-                return shareLinkToWX(shareContent);
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * 检查是否安装微信
-     */
-    private boolean checkVX() {
-        if (wxapi == null)
-            wxapi = WXAPIFactory.createWXAPI(MainActivity.this, MainActivity.WECHAT_APP_ID, true);
-        if (wxapi.isWXAppInstalled())
-            return true;
-        Toast.makeText(MainActivity.this, "微信未安装", Toast.LENGTH_SHORT).show();
-        return false;
-    }
-
 
     /**
      * 检测权限是否被允许

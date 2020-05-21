@@ -5,7 +5,9 @@ package com.ddwx.family.utils;
  */
 public enum UrlType {
     ACCRSSTOKEN,
-    REFRESH_TOKEN,
+    REFRESH_TOKEN_TO_LOGIN,
+    REFRESH_TOKEN_FOR_GET_USERINFO,
     USERINFO,
-    CHECK_ACCESS
+    CHECK_ACCESS_TO_LOGIN,
+    CHECK_ACCESS_FOR_GET_USERINFO
 }
